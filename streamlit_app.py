@@ -9,8 +9,8 @@ import pandas as pd
 
 # Set the title and favicon that appear in the Browser's tab bar.
 st.set_page_config(
-    page_title="Inventory tracker",
-    page_icon=":shopping_bags:",  # This is an emoji shortcode. Could be a URL too.
+    page_title="2-Wheeler Repair Shop Tracker",
+    page_icon=":wrench:",  # This is an emoji shortcode. Could be a URL too.
 )
 
 
@@ -21,7 +21,7 @@ st.set_page_config(
 def connect_db():
     """Connects to the sqlite database."""
 
-    DB_FILENAME = Path(__file__).parent / "inventory.db"
+    DB_FILENAME = Path(__file__).parent / "repair_shop.db"
     db_already_exists = DB_FILENAME.exists()
 
     conn = sqlite3.connect(DB_FILENAME)
@@ -31,18 +31,19 @@ def connect_db():
 
 
 def initialize_data(conn):
-    """Initializes the inventory table with some data."""
+    """Initializes the repair shop database with some data."""
     cursor = conn.cursor()
 
     cursor.execute(
         """
-        CREATE TABLE IF NOT EXISTS inventory (
+        CREATE TABLE IF NOT EXISTS repairs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             item_name TEXT,
             price REAL,
-            units_sold INTEGER,
+            labor_cost REAL,
+            parts_cost REAL,
+            units_used INTEGER,
             units_left INTEGER,
-            cost_price REAL,
             reorder_point INTEGER,
             description TEXT
         )
@@ -51,51 +52,29 @@ def initialize_data(conn):
 
     cursor.execute(
         """
-        INSERT INTO inventory
-            (item_name, price, units_sold, units_left, cost_price, reorder_point, description)
+        INSERT INTO repairs
+            (item_name, price, labor_cost, parts_cost, units_used, units_left, reorder_point, description)
         VALUES
-            -- Beverages
-            ('Bottled Water (500ml)', 1.50, 115, 15, 0.80, 16, 'Hydrating bottled water'),
-            ('Soda (355ml)', 2.00, 93, 8, 1.20, 10, 'Carbonated soft drink'),
-            ('Energy Drink (250ml)', 2.50, 12, 18, 1.50, 8, 'High-caffeine energy drink'),
-            ('Coffee (hot, large)', 2.75, 11, 14, 1.80, 5, 'Freshly brewed hot coffee'),
-            ('Juice (200ml)', 2.25, 11, 9, 1.30, 5, 'Fruit juice blend'),
-
-            -- Snacks
-            ('Potato Chips (small)', 2.00, 34, 16, 1.00, 10, 'Salted and crispy potato chips'),
-            ('Candy Bar', 1.50, 6, 19, 0.80, 15, 'Chocolate and candy bar'),
-            ('Granola Bar', 2.25, 3, 12, 1.30, 8, 'Healthy and nutritious granola bar'),
-            ('Cookies (pack of 6)', 2.50, 8, 8, 1.50, 5, 'Soft and chewy cookies'),
-            ('Fruit Snack Pack', 1.75, 5, 10, 1.00, 8, 'Assortment of dried fruits and nuts'),
-
-            -- Personal Care
-            ('Toothpaste', 3.50, 1, 9, 2.00, 5, 'Minty toothpaste for oral hygiene'),
-            ('Hand Sanitizer (small)', 2.00, 2, 13, 1.20, 8, 'Small sanitizer bottle for on-the-go'),
-            ('Pain Relievers (pack)', 5.00, 1, 5, 3.00, 3, 'Over-the-counter pain relief medication'),
-            ('Bandages (box)', 3.00, 0, 10, 2.00, 5, 'Box of adhesive bandages for minor cuts'),
-            ('Sunscreen (small)', 5.50, 6, 5, 3.50, 3, 'Small bottle of sunscreen for sun protection'),
-
-            -- Household
-            ('Batteries (AA, pack of 4)', 4.00, 1, 5, 2.50, 3, 'Pack of 4 AA batteries'),
-            ('Light Bulbs (LED, 2-pack)', 6.00, 3, 3, 4.00, 2, 'Energy-efficient LED light bulbs'),
-            ('Trash Bags (small, 10-pack)', 3.00, 5, 10, 2.00, 5, 'Small trash bags for everyday use'),
-            ('Paper Towels (single roll)', 2.50, 3, 8, 1.50, 5, 'Single roll of paper towels'),
-            ('Multi-Surface Cleaner', 4.50, 2, 5, 3.00, 3, 'All-purpose cleaning spray'),
-
-            -- Others
-            ('Lottery Tickets', 2.00, 17, 20, 1.50, 10, 'Assorted lottery tickets'),
-            ('Newspaper', 1.50, 22, 20, 1.00, 5, 'Daily newspaper')
+            -- Common Repair Items
+            ('Engine Oil Change', 600.00, 100.00, 400.00, 35, 10, 10, 'Engine oil replacement'),
+            ('Brake Pad Replacement', 1000.00, 200.00, 600.00, 20, 8, 10, 'Brake pad replacement service'),
+            ('Spark Plug Replacement', 200.00, 50.00, 100.00, 30, 12, 5, 'Replacement of spark plug'),
+            ('Tire Replacement (Front)', 1200.00, 100.00, 900.00, 12, 5, 5, 'Replacement of front tire'),
+            ('Tire Replacement (Rear)', 1500.00, 100.00, 1100.00, 10, 5, 5, 'Replacement of rear tire'),
+            ('Battery Replacement', 2500.00, 150.00, 2000.00, 8, 3, 3, 'Replacement of battery'),
+            ('Chain Replacement', 800.00, 100.00, 500.00, 15, 7, 5, 'Chain replacement service'),
+            ('Headlight Replacement', 600.00, 50.00, 400.00, 10, 5, 5, 'Headlight replacement')
         """
     )
     conn.commit()
 
 
 def load_data(conn):
-    """Loads the inventory data from the database."""
+    """Loads the repair shop data from the database."""
     cursor = conn.cursor()
 
     try:
-        cursor.execute("SELECT * FROM inventory")
+        cursor.execute("SELECT * FROM repairs")
         data = cursor.fetchall()
     except:
         return None
@@ -106,9 +85,10 @@ def load_data(conn):
             "id",
             "item_name",
             "price",
-            "units_sold",
+            "labor_cost",
+            "parts_cost",
+            "units_used",
             "units_left",
-            "cost_price",
             "reorder_point",
             "description",
         ],
@@ -118,11 +98,11 @@ def load_data(conn):
 
 
 def update_data(conn, df, changes):
-    """Updates the inventory data in the database."""
+    """Updates the repair shop data in the database."""
     cursor = conn.cursor()
 
     if changes["edited_rows"]:
-        deltas = st.session_state.inventory_table["edited_rows"]
+        deltas = st.session_state.repair_table["edited_rows"]
         rows = []
 
         for i, delta in deltas.items():
@@ -132,13 +112,14 @@ def update_data(conn, df, changes):
 
         cursor.executemany(
             """
-            UPDATE inventory
+            UPDATE repairs
             SET
                 item_name = :item_name,
                 price = :price,
-                units_sold = :units_sold,
+                labor_cost = :labor_cost,
+                parts_cost = :parts_cost,
+                units_used = :units_used,
                 units_left = :units_left,
-                cost_price = :cost_price,
                 reorder_point = :reorder_point,
                 description = :description
             WHERE id = :id
@@ -149,17 +130,17 @@ def update_data(conn, df, changes):
     if changes["added_rows"]:
         cursor.executemany(
             """
-            INSERT INTO inventory
-                (id, item_name, price, units_sold, units_left, cost_price, reorder_point, description)
+            INSERT INTO repairs
+                (id, item_name, price, labor_cost, parts_cost, units_used, units_left, reorder_point, description)
             VALUES
-                (:id, :item_name, :price, :units_sold, :units_left, :cost_price, :reorder_point, :description)
+                (:id, :item_name, :price, :labor_cost, :parts_cost, :units_used, :units_left, :reorder_point, :description)
             """,
             (defaultdict(lambda: None, row) for row in changes["added_rows"]),
         )
 
     if changes["deleted_rows"]:
         cursor.executemany(
-            "DELETE FROM inventory WHERE id = :id",
+            "DELETE FROM repairs WHERE id = :id",
             ({"id": int(df.loc[i, "id"])} for i in changes["deleted_rows"]),
         )
 
@@ -167,19 +148,19 @@ def update_data(conn, df, changes):
 
 
 # -----------------------------------------------------------------------------
-# Draw the actual page, starting with the inventory table.
+# Draw the actual page, starting with the repair items table.
 
 # Set the title that appears at the top of the page.
 """
-# :shopping_bags: Inventory tracker
+# :wrench: 2-Wheeler Repair Shop Cost Tracker
 
-**Welcome to Alice's Corner Store's intentory tracker!**
-This page reads and writes directly from/to our inventory database.
+**Welcome to the cost accounting tracker for your 2-wheeler repair shop!**
+This page reads and writes directly from/to your repair shop database.
 """
 
 st.info(
     """
-    Use the table below to add, remove, and edit items.
+    Use the table below to add, remove, and edit repair items and costs.
     And don't forget to commit your changes when you're done.
     """
 )
@@ -201,14 +182,14 @@ edited_df = st.data_editor(
     disabled=["id"],  # Don't allow editing the 'id' column.
     num_rows="dynamic",  # Allow appending/deleting rows.
     column_config={
-        # Show dollar sign before price columns.
-        "price": st.column_config.NumberColumn(format="$%.2f"),
-        "cost_price": st.column_config.NumberColumn(format="$%.2f"),
+        "price": st.column_config.NumberColumn(format="₹%.2f"),
+        "labor_cost": st.column_config.NumberColumn(format="₹%.2f"),
+        "parts_cost": st.column_config.NumberColumn(format="₹%.2f"),
     },
-    key="inventory_table",
+    key="repair_table",
 )
 
-has_uncommitted_changes = any(len(v) for v in st.session_state.inventory_table.values())
+has_uncommitted_changes = any(len(v) for v in st.session_state.repair_table.values())
 
 st.button(
     "Commit changes",
@@ -216,26 +197,26 @@ st.button(
     disabled=not has_uncommitted_changes,
     # Update data in database
     on_click=update_data,
-    args=(conn, df, st.session_state.inventory_table),
+    args=(conn, df, st.session_state.repair_table),
 )
 
 
 # -----------------------------------------------------------------------------
-# Now some cool charts
+# Now some charts for insights.
 
 # Add some space
 ""
 ""
 ""
 
-st.subheader("Units left", divider="red")
+st.subheader("Inventory Level and Reordering", divider="red")
 
 need_to_reorder = df[df["units_left"] < df["reorder_point"]].loc[:, "item_name"]
 
 if len(need_to_reorder) > 0:
     items = "\n".join(f"* {name}" for name in need_to_reorder)
 
-    st.error(f"We're running dangerously low on the items below:\n {items}")
+    st.error(f"We're running low on the following items:\n {items}")
 
 ""
 ""
@@ -243,9 +224,7 @@ if len(need_to_reorder) > 0:
 st.altair_chart(
     # Layer 1: Bar chart.
     alt.Chart(df)
-    .mark_bar(
-        orient="horizontal",
-    )
+    .mark_bar(orient="horizontal")
     .encode(
         x="units_left",
         y="item_name",
@@ -274,7 +253,7 @@ st.caption("NOTE: The :diamonds: location shows the reorder point.")
 
 # -----------------------------------------------------------------------------
 
-st.subheader("Best sellers", divider="orange")
+st.subheader("Top Services", divider="orange")
 
 ""
 ""
@@ -283,8 +262,9 @@ st.altair_chart(
     alt.Chart(df)
     .mark_bar(orient="horizontal")
     .encode(
-        x="units_sold",
+        x="units_used",
         y=alt.Y("item_name").sort("-x"),
     ),
     use_container_width=True,
 )
+
