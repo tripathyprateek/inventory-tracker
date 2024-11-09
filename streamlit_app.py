@@ -9,7 +9,7 @@ import pandas as pd
 
 # Set the title and favicon that appear in the Browser's tab bar.
 st.set_page_config(
-    page_title="2-Wheeler Repair Shop Tracker",
+    page_title="2-Wheeler Service Provider",
     page_icon=":wrench:",  # This is an emoji shortcode. Could be a URL too.
 )
 
@@ -152,15 +152,28 @@ def update_data(conn, df, changes):
 
 # Set the title that appears at the top of the page.
 """
-# :wrench: 2-Wheeler Repair Shop Cost Tracker
+# :wrench: The Wrenchman Repair Shop :wrench:
 
-**Welcome to the cost accounting tracker for your 2-wheeler repair shop!**
-This page reads and writes directly from/to your repair shop database.
+**Welcome to the cost accounting tracker for Bosch 2-wheeler repair shop!**"""
 """
+This project provides practical insights into the operational aspects of 
+running a small service business in the two-wheeler industry.
+"""
+"""
+So lets go to know a little bit more about this tiny shop called The Wrenchman located in
+District Center, Chandrashekharpur, Bhubaneswar.
+This shop is owned and operated by Lal Rajesh Shah Deo and he's in this
+business for the last 29 years. He has been providing services to all brands of 2 wheelers under
+his expertise and has built his reputation over time in this industry.
+"""
+
+
+st.image("image.jpeg", caption="The Wrenchman Repair Shop", use_container_width=True)
+
 
 st.info(
     """
-    Use the table below to add, remove, and edit repair items and costs.
+    Use the Cost Balance Sheet to add, remove, and edit repair items and costs.
     And don't forget to commit your changes when you're done.
     """
 )
@@ -208,6 +221,7 @@ st.button(
 ""
 ""
 ""
+
 
 st.subheader("Inventory Level and Reordering", divider="red")
 
@@ -263,7 +277,7 @@ st.altair_chart(
     .mark_bar(orient="horizontal")
     .encode(
         x="units_used",
-        y=alt.Y("item_name").sort("-x"),
+       y=alt.Y("item_name", sort="-x")
     ),
     use_container_width=True,
 )
