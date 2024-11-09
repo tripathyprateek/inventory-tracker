@@ -3,5 +3,4 @@ pandas
 numpy
 xlsxwriter
 openpyxl
-sqlite3
 st-aggrid
