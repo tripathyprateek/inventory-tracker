@@ -264,7 +264,6 @@ st.markdown(
     ### Contact Information
 
     📞 **Contact**: [09338474750](tel:09338474750)  
-    📍 **Location**: [View on Google Maps](https://maps.app.goo.gl/89isLEA2qZx8JCfz5)  
     👥 **Group Members**:
     - Prateek Tripathy
     - Prathamesh Kulkarni
