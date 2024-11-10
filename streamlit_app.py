@@ -254,11 +254,23 @@ st.altair_chart(
 )
 
 # Footer 
+# -----------------------------------------------------------------------------
+# Footer Section
 
 st.divider()
 
 st.markdown(
     """
-    ### Shop Details
-    📞 **Contact**: [09338474750](tel:09338474750)  -  Lal Rajesh Shah Deo 
-    📍 **Location**: [View on Google Maps](https://www.google.com/maps/place/The+WrenchMan+Honda+Service/@20.3253636,85.819295,17.83z/data=!4m6!3m5!1s0x3a
+    ### Contact Information
+
+    📞 **Contact**: [09338474750](tel:09338474750)  
+    📍 **Location**: [View on Google Maps](https://maps.app.goo.gl/89isLEA2qZx8JCfz5)  
+    👥 **Group Members**:
+    - Prateek Tripathy
+    - Prathamesh Kulkarni
+    - Ameya Kshatriya
+    - Ankita Priyadarshini
+    - Hrushikesh Umalkar
+    """,
+    unsafe_allow_html=True,
+)
