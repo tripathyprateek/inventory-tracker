@@ -252,24 +252,3 @@ st.altair_chart(
     ),
     use_container_width=True,
 )
-
-# Footer 
-# -----------------------------------------------------------------------------
-# Footer Section
-
-st.divider()
-
-st.markdown(
-    """
-    ### Contact Information
-
-    📞 **Contact**: [09338474750](tel:09338474750)  
-    👥 **Group Members**:
-    - Prateek Tripathy
-    - Prathamesh Kulkarni
-    - Ameya Kshatriya
-    - Ankita Priyadarshini
-    - Hrushikesh Umalkar
-    """,
-    unsafe_allow_html=True,
-)
