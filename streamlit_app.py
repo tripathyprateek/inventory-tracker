@@ -9,7 +9,7 @@ import pandas as pd
 
 # Set the title and favicon that appear in the Browser's tab bar.
 st.set_page_config(
-    page_title="2-Wheeler Service Provider",
+    page_title="Wrenchman Repair Shop",
     page_icon=":wrench:",  # This is an emoji shortcode. Could be a URL too.
 )
 
@@ -156,12 +156,14 @@ def update_data(conn, df, changes):
 
 **Welcome to the cost accounting tracker for Bosch 2-wheeler repair shop!**"""
 """
-This project provides practical insights into the operational aspects of 
-running a small service business in the two-wheeler industry.
+This project provides insights into the cost and operational aspects of 
+running a 2 wheeler service business in the repair industry.
 """
 """
-So lets go to know a little bit more about this tiny shop called The Wrenchman located in
-District Center, Chandrashekharpur, Bhubaneswar.
+So lets go to know a little bit more about this shop called The Wrenchman located in
+District Center, Chandrashekharpur, Bhubaneswar. It is a Bosch service center.
+
+
 This shop is owned and operated by Lal Rajesh Shah Deo and he's in this
 business for the last 29 years. He has been providing services to all brands of 2 wheelers under
 his expertise and has built his reputation over time in this industry.
@@ -173,8 +175,9 @@ st.image("image.jpeg", caption="The Wrenchman Repair Shop", use_container_width=
 
 st.info(
     """
-    Use the Cost Balance Sheet to add, remove, and edit repair items and costs.
-    And don't forget to commit your changes when you're done.
+    Use the Cost Balance Sheet to add, remove, and edit items and associated costs.
+
+    And commit your changes once you have entered the data.
     """
 )
 
@@ -217,7 +220,6 @@ st.button(
 # -----------------------------------------------------------------------------
 # Now some charts for insights.
 
-# Add some space
 ""
 ""
 ""
@@ -282,3 +284,32 @@ st.altair_chart(
     use_container_width=True,
 )
 
+
+# Footer 
+
+st.divider()
+
+st.markdown(
+    """
+    ### Shop Details
+
+    📞 **Contact**: [09338474750](tel:09338474750)  -  Lal Rajesh Shah Deo 
+    
+    📍 **Location**: [View on Google Maps](https://www.google.com/maps/place/The+WrenchMan+Honda+Service/@20.3253636,85.819295,17.83z/data=!4m6!3m5!1s0x3a190987b1b7c1c5:0xbe6d62beda1b73b1!8m2!3d20.3253846!4d85.8192934!16s%2Fg%2F11j9f6xh5f?entry=ttu&g_ep=EgoyMDI0MTEwNi4wIKXMDSoASAFQAw%3D%3D)  
+    
+    👥 **Group Members**:
+    - Ankita Priyadarshini (UM24329)
+    - Hrushikesh Wasudeo Umalkar (UM24350)
+    - Kshatriya Ameya Anil (UM24353)
+    - Kulkarni Prathamesh Milind (UM24354)
+    - Prateek Tripathy (UM24360)
+    """
+)
+
+# Embed Google Maps iframe with the pinned location
+st.components.v1.iframe(
+    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d609.915711848547!2d85.8192934!3d20.3253846!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a190987b1b7c1c5%3A0xbe6d62beda1b73b1!2sThe%20WrenchMan%20Honda%20Service!5e0!3m2!1sen!2sin!4v1699618898505!5m2!1sen!2sin",
+    width=700,
+    height=400,
+    scrolling=False,
+)
