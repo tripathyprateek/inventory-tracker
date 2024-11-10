@@ -1,11 +1,11 @@
 from collections import defaultdict
 from pathlib import Path
 import sqlite3
+import os
 
 import streamlit as st
 import altair as alt
 import pandas as pd
-
 
 # Set the title and favicon that appear in the Browser's tab bar.
 st.set_page_config(
@@ -13,14 +13,11 @@ st.set_page_config(
     page_icon=":wrench:",  # This is an emoji shortcode. Could be a URL too.
 )
 
-
 # -----------------------------------------------------------------------------
 # Declare some useful functions.
 
-
 def connect_db():
     """Connects to the sqlite database."""
-
     DB_FILENAME = Path(__file__).parent / "repair_shop.db"
     db_already_exists = DB_FILENAME.exists()
 
@@ -29,73 +26,75 @@ def connect_db():
 
     return conn, db_was_just_created
 
-
 def initialize_data(conn):
-    """Initializes the repair shop database with some data."""
-    cursor = conn.cursor()
-
-    cursor.execute(
-        """
-        CREATE TABLE IF NOT EXISTS repairs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            item_name TEXT,
-            price REAL,
-            labor_cost REAL,
-            parts_cost REAL,
-            units_used INTEGER,
-            units_left INTEGER,
-            reorder_point INTEGER,
-            description TEXT
+    """Initializes the repair shop database with some data if it's newly created."""
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS repairs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                item_name TEXT,
+                price REAL,
+                labor_cost REAL,
+                parts_cost REAL,
+                units_used INTEGER,
+                units_left INTEGER,
+                reorder_point INTEGER,
+                description TEXT
+            )
+            """
         )
-        """
-    )
 
-    cursor.execute(
-        """
-        INSERT INTO repairs
-            (item_name, price, labor_cost, parts_cost, units_used, units_left, reorder_point, description)
-        VALUES
-            -- Common Repair Items
-            ('Engine Oil Change', 600.00, 100.00, 400.00, 35, 10, 10, 'Engine oil replacement'),
-            ('Brake Pad Replacement', 1000.00, 200.00, 600.00, 20, 8, 10, 'Brake pad replacement service'),
-            ('Spark Plug Replacement', 200.00, 50.00, 100.00, 30, 12, 5, 'Replacement of spark plug'),
-            ('Tire Replacement (Front)', 1200.00, 100.00, 900.00, 12, 5, 5, 'Replacement of front tire'),
-            ('Tire Replacement (Rear)', 1500.00, 100.00, 1100.00, 10, 5, 5, 'Replacement of rear tire'),
-            ('Battery Replacement', 2500.00, 150.00, 2000.00, 8, 3, 3, 'Replacement of battery'),
-            ('Chain Replacement', 800.00, 100.00, 500.00, 15, 7, 5, 'Chain replacement service'),
-            ('Headlight Replacement', 600.00, 50.00, 400.00, 10, 5, 5, 'Headlight replacement')
-        """
-    )
-    conn.commit()
-
+        # Check if sample data already exists to avoid duplication
+        cursor.execute("SELECT COUNT(*) FROM repairs")
+        if cursor.fetchone()[0] == 0:
+            cursor.executemany(
+                """
+                INSERT INTO repairs
+                    (item_name, price, labor_cost, parts_cost, units_used, units_left, reorder_point, description)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                [
+                    ("Engine Oil Change", 600.00, 100.00, 400.00, 35, 10, 10, "Engine oil replacement"),
+                    ("Brake Pad Replacement", 1000.00, 200.00, 600.00, 20, 8, 10, "Brake pad replacement service"),
+                    ("Spark Plug Replacement", 200.00, 50.00, 100.00, 30, 12, 5, "Replacement of spark plug"),
+                    ("Tire Replacement (Front)", 1200.00, 100.00, 900.00, 12, 5, 5, "Replacement of front tire"),
+                    ("Tire Replacement (Rear)", 1500.00, 100.00, 1100.00, 10, 5, 5, "Replacement of rear tire"),
+                    ("Battery Replacement", 2500.00, 150.00, 2000.00, 8, 3, 3, "Replacement of battery"),
+                    ("Chain Replacement", 800.00, 100.00, 500.00, 15, 7, 5, "Chain replacement service"),
+                    ("Headlight Replacement", 600.00, 50.00, 400.00, 10, 5, 5, "Headlight replacement"),
+                ],
+            )
+            conn.commit()
+            st.toast("Database initialized with sample data.")
+    except Exception as e:
+        st.error(f"Error initializing database: {e}")
 
 def load_data(conn):
     """Loads the repair shop data from the database."""
-    cursor = conn.cursor()
-
     try:
+        cursor = conn.cursor()
         cursor.execute("SELECT * FROM repairs")
         data = cursor.fetchall()
-    except:
-        return None
-
-    df = pd.DataFrame(
-        data,
-        columns=[
-            "id",
-            "item_name",
-            "price",
-            "labor_cost",
-            "parts_cost",
-            "units_used",
-            "units_left",
-            "reorder_point",
-            "description",
-        ],
-    )
-
-    return df
-
+        df = pd.DataFrame(
+            data,
+            columns=[
+                "id",
+                "item_name",
+                "price",
+                "labor_cost",
+                "parts_cost",
+                "units_used",
+                "units_left",
+                "reorder_point",
+                "description",
+            ],
+        )
+        return df
+    except Exception as e:
+        st.error(f"Error loading data from database: {e}")
+        return pd.DataFrame()
 
 def update_data(conn, df, changes):
     """Updates the repair shop data in the database."""
@@ -131,9 +130,9 @@ def update_data(conn, df, changes):
         cursor.executemany(
             """
             INSERT INTO repairs
-                (id, item_name, price, labor_cost, parts_cost, units_used, units_left, reorder_point, description)
+                (item_name, price, labor_cost, parts_cost, units_used, units_left, reorder_point, description)
             VALUES
-                (:id, :item_name, :price, :labor_cost, :parts_cost, :units_used, :units_left, :reorder_point, :description)
+                (:item_name, :price, :labor_cost, :parts_cost, :units_used, :units_left, :reorder_point, :description)
             """,
             (defaultdict(lambda: None, row) for row in changes["added_rows"]),
         )
@@ -146,37 +145,26 @@ def update_data(conn, df, changes):
 
     conn.commit()
 
-
 # -----------------------------------------------------------------------------
 # Draw the actual page, starting with the repair items table.
 
 # Set the title that appears at the top of the page.
-"""
-# :wrench: The Wrenchman Repair Shop :wrench:
+st.title(":wrench: The Wrenchman Repair Shop :wrench:")
 
-**Welcome to the cost accounting tracker for Bosch 2-wheeler repair shop!**"""
-"""
-This project provides insights into the cost and operational aspects of 
-running a 2 wheeler service business in the repair industry.
-"""
-"""
-So lets go to know a little bit more about this shop called The Wrenchman located in
-District Center, Chandrashekharpur, Bhubaneswar. It is a Bosch service center.
+st.write("**Welcome to the cost accounting tracker for Bosch 2-wheeler repair shop!**")
+st.write("""
+This project provides insights into the cost and operational aspects of running a 2 wheeler service business in the repair industry.
+""")
 
-
-This shop is owned and operated by Lal Rajesh Shah Deo and he's in this
-business for the last 29 years. He has been providing services to all brands of 2 wheelers under
-his expertise and has built his reputation over time in this industry.
-"""
-
-
-st.image("image.jpeg", caption="The Wrenchman Repair Shop", use_container_width=True)
-
+# Check if image exists before loading
+if os.path.exists("image.jpeg"):
+    st.image("image.jpeg", caption="The Wrenchman Repair Shop", use_container_width=True)
+else:
+    st.warning("Image file 'image.jpeg' not found.")
 
 st.info(
     """
     Use the Cost Balance Sheet to add, remove, and edit items and associated costs.
-
     And commit your changes once you have entered the data.
     """
 )
@@ -184,10 +172,9 @@ st.info(
 # Connect to database and create table if needed
 conn, db_was_just_created = connect_db()
 
-# Initialize data.
+# Initialize data if the database was just created
 if db_was_just_created:
     initialize_data(conn)
-    st.toast("Database initialized with some sample data.")
 
 # Load data from database
 df = load_data(conn)
@@ -216,36 +203,24 @@ st.button(
     args=(conn, df, st.session_state.repair_table),
 )
 
-
 # -----------------------------------------------------------------------------
 # Now some charts for insights.
 
-""
-""
-""
-
-
-st.subheader("Inventory Level and Reordering", divider="red")
+st.subheader("Inventory Level and Reordering")
 
 need_to_reorder = df[df["units_left"] < df["reorder_point"]].loc[:, "item_name"]
 
 if len(need_to_reorder) > 0:
     items = "\n".join(f"* {name}" for name in need_to_reorder)
-
     st.error(f"We're running low on the following items:\n {items}")
 
-""
-""
-
 st.altair_chart(
-    # Layer 1: Bar chart.
     alt.Chart(df)
     .mark_bar(orient="horizontal")
     .encode(
         x="units_left",
         y="item_name",
     )
-    # Layer 2: Chart showing the reorder point.
     + alt.Chart(df)
     .mark_point(
         shape="diamond",
@@ -263,27 +238,20 @@ st.altair_chart(
 
 st.caption("NOTE: The :diamonds: location shows the reorder point.")
 
-""
-""
-""
-
 # -----------------------------------------------------------------------------
+# Top services chart
 
-st.subheader("Top Services", divider="orange")
-
-""
-""
+st.subheader("Top Services")
 
 st.altair_chart(
     alt.Chart(df)
     .mark_bar(orient="horizontal")
     .encode(
         x="units_used",
-       y=alt.Y("item_name", sort="-x")
+        y=alt.Y("item_name", sort="-x")
     ),
     use_container_width=True,
 )
-
 
 # Footer 
 
@@ -292,24 +260,5 @@ st.divider()
 st.markdown(
     """
     ### Shop Details
-
     📞 **Contact**: [09338474750](tel:09338474750)  -  Lal Rajesh Shah Deo 
-    
-    📍 **Location**: [View on Google Maps](https://www.google.com/maps/place/The+WrenchMan+Honda+Service/@20.3253636,85.819295,17.83z/data=!4m6!3m5!1s0x3a190987b1b7c1c5:0xbe6d62beda1b73b1!8m2!3d20.3253846!4d85.8192934!16s%2Fg%2F11j9f6xh5f?entry=ttu&g_ep=EgoyMDI0MTEwNi4wIKXMDSoASAFQAw%3D%3D)  
-    
-    👥 **Group Members**:
-    - Ankita Priyadarshini (UM24329)
-    - Hrushikesh Wasudeo Umalkar (UM24350)
-    - Kshatriya Ameya Anil (UM24353)
-    - Kulkarni Prathamesh Milind (UM24354)
-    - Prateek Tripathy (UM24360)
-    """
-)
-
-# # Embed Google Maps iframe with the pinned location
-# st.components.v1.iframe(
-#     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d609.915711848547!2d85.8192934!3d20.3253846!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a190987b1b7c1c5%3A0xbe6d62beda1b73b1!2sThe%20WrenchMan%20Honda%20Service!5e0!3m2!1sen!2sin!4v1699618898505!5m2!1sen!2sin",
-#     width=700,
-#     height=400,
-#     scrolling=False,
-# )
+    📍 **Location**: [View on Google Maps](https://www.google.com/maps/place/The+WrenchMan+Honda+Service/@20.3253636,85.819295,17.83z/data=!4m6!3m5!1s0x3a
