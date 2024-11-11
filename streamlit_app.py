@@ -252,3 +252,28 @@ st.altair_chart(
     ),
     use_container_width=True,
 )
+
+# Footer 
+st.divider()
+st.markdown(
+    """
+    ### Shop Details
+    📞 **Contact**: [09338474750](tel:09338474750)  -  Lal Rajesh Shah Deo 
+    
+    📍 **Location**: [View on Google Maps](https://www.google.com/maps/place/The+WrenchMan+Honda+Service/@20.3253636,85.819295,17.83z/data=!4m6!3m5!1s0x3a190987b1b7c1c5:0xbe6d62beda1b73b1!8m2!3d20.3253846!4d85.8192934!16s%2Fg%2F11j9f6xh5f?entry=ttu&g_ep=EgoyMDI0MTEwNi4wIKXMDSoASAFQAw%3D%3D)  
+    
+    👥 **Group Members**:
+    - Ankita Priyadarshini (UM24329)
+    - Hrushikesh Wasudeo Umalkar (UM24350)
+    - Kshatriya Ameya Anil (UM24353)
+    - Kulkarni Prathamesh Milind (UM24354)
+    - Prateek Tripathy (UM24360)
+    """
+)
+# Embed Google Maps iframe with the pinned location
+st.components.v1.iframe(
+    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d609.915711848547!2d85.8192934!3d20.3253846!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a190987b1b7c1c5%3A0xbe6d62beda1b73b1!2sThe%20WrenchMan%20Honda%20Service!5e0!3m2!1sen!2sin!4v1699618898505!5m2!1sen!2sin",
+    width=700,
+    height=400,
+    scrolling=False,
+)
