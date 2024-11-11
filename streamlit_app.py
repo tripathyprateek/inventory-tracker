@@ -154,6 +154,12 @@ st.title(":wrench: The Wrenchman Repair Shop :wrench:")
 st.write("**Welcome to the cost accounting tracker for Bosch 2-wheeler repair shop!**")
 st.write("""
 This project provides insights into the cost and operational aspects of running a 2 wheeler service business in the repair industry.
+
+The Wrenchman is located in District Center, Chandrashekharpur, Bhubaneswar.
+
+This shop is owned and operated by Lal Rajesh Shah Deo and he's in this
+business for the last 29 years. He has been providing services to all brands of 2 wheelers under
+his expertise and has built his reputation over time in this industry.
 """)
 
 # Check if image exists before loading
