@@ -9,7 +9,7 @@ import pandas as pd
 
 # Set the title and favicon that appear in the Browser's tab bar.
 st.set_page_config(
-    page_title="Wrenchman Repair Shop",
+    page_title="Wrenchman Service Provider",
     page_icon=":wrench:",  # This is an emoji shortcode. Could be a URL too.
 )
 
@@ -27,7 +27,7 @@ def connect_db():
     return conn, db_was_just_created
 
 def initialize_data(conn):
-    """Initializes the repair shop database with some data if it's newly created."""
+    """Initializes the Service Provider database with some data if it's newly created."""
     try:
         cursor = conn.cursor()
         cursor.execute(
@@ -72,7 +72,7 @@ def initialize_data(conn):
         st.error(f"Error initializing database: {e}")
 
 def load_data(conn):
-    """Loads the repair shop data from the database."""
+    """Loads the Service Provider data from the database."""
     try:
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM repairs")
@@ -97,7 +97,7 @@ def load_data(conn):
         return pd.DataFrame()
 
 def update_data(conn, df, changes):
-    """Updates the repair shop data in the database."""
+    """Updates the Service Provider data in the database."""
     cursor = conn.cursor()
 
     if changes["edited_rows"]:
@@ -149,9 +149,9 @@ def update_data(conn, df, changes):
 # Draw the actual page, starting with the repair items table.
 
 # Set the title that appears at the top of the page.
-st.title(":wrench: The Wrenchman Repair Shop :wrench:")
+st.title(":wrench: The Wrenchman Service Provider :wrench:")
 
-st.write("**Welcome to the cost accounting tracker for Bosch 2-wheeler repair shop!**")
+st.write("**Welcome to the cost accounting tracker for Bosch 2-wheeler Service Provider!**")
 st.write("""
 This project provides insights into the cost and operational aspects of running a 2 wheeler service business in the repair industry.
 
@@ -164,7 +164,7 @@ his expertise and has built his reputation over time in this industry.
 
 # Check if image exists before loading
 if os.path.exists("image.jpeg"):
-    st.image("image.jpeg", caption="The Wrenchman Repair Shop", use_container_width=True)
+    st.image("image.jpeg", caption="The Wrenchman Service Provider", use_container_width=True)
 else:
     st.warning("Image file 'image.jpeg' not found.")
 
