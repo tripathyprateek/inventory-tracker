@@ -7,6 +7,8 @@ import streamlit as st
 import altair as alt
 import pandas as pd
 
+
+
 # Set the title and favicon that appear in the Browser's tab bar.
 st.set_page_config(
     page_title="Wrenchman Service Provider",
@@ -259,8 +261,87 @@ st.altair_chart(
     use_container_width=True,
 )
 
+
+
+# -----------------------------------------------------------------------------
+# Balance Sheet Tables for Assets, Liabilities, and Equity
+
+# Initial data for the tables
+if "assets_data" not in st.session_state:
+    st.session_state.assets_data = pd.DataFrame(
+        {"Asset Name": ["Physical Assets", "Financial Assets"], "Value (₹)": [500000, 200000]}
+    )
+
+if "liabilities_data" not in st.session_state:
+    st.session_state.liabilities_data = pd.DataFrame(
+        {"Liability Name": ["Current Liabilities", "Non-Current Liabilities"], "Value (₹)": [100000, 150000]}
+    )
+
+if "equity_data" not in st.session_state:
+    st.session_state.equity_data = pd.DataFrame(
+        {"Equity Name": ["Capital Invested", "Share Capital"], "Value (₹)": [300000,150000]}
+    )
+
+st.subheader("Manage Balance Sheet")
+
+# Editable Assets Table
+st.write("### Assets")
+st.session_state.assets_data = st.data_editor(
+    st.session_state.assets_data,
+    key="assets_table",
+    num_rows="dynamic",  # Allow adding/removing rows
+    column_config={"Value (₹)": st.column_config.NumberColumn(format="₹%.2f")},
+)
+
+# Editable Liabilities Table
+st.write("### Liabilities")
+st.session_state.liabilities_data = st.data_editor(
+    st.session_state.liabilities_data,
+    key="liabilities_table",
+    num_rows="dynamic",  # Allow adding/removing rows
+    column_config={"Value (₹)": st.column_config.NumberColumn(format="₹%.2f")},
+)
+
+# Editable Equity Table
+st.write("### Equity")
+st.session_state.equity_data = st.data_editor(
+    st.session_state.equity_data,
+    key="equity_table",
+    num_rows="dynamic",  # Allow adding/removing rows
+    column_config={"Value (₹)": st.column_config.NumberColumn(format="₹%.2f")},
+)
+
+# -----------------------------------------------------------------------------
+# Final Table: Relation Between Assets, Liabilities, and Equity
+
+st.subheader("Financial Summary")
+total_assets = st.session_state.assets_data["Value (₹)"].sum()
+total_liabilities = st.session_state.liabilities_data["Value (₹)"].sum()
+total_equity = st.session_state.equity_data["Value (₹)"].sum()
+
+# Calculate the difference for validation
+difference = total_assets - (total_liabilities + total_equity)
+
+# Display the summary table
+summary_table = pd.DataFrame(
+    {
+        "Category": ["Total Assets", "Total Liabilities", "Total Equity", "Difference"],
+        "Value (₹)": [total_assets, total_liabilities, total_equity, difference],
+    }
+)
+st.table(summary_table)
+
+# Highlight if there is a mismatch
+if difference != 0:
+    st.warning(
+        f"There is a mismatch of ₹{difference:,.2f} between Assets and the sum of Liabilities and Equity."
+    )
+else:
+    st.success("The Balance Sheet is balanced: Assets = Liabilities + Equity")
+
+
 # Footer 
-st.divider()
+    st.title("Shop Details")
 st.markdown(
     """
     ### Shop Details
