@@ -269,17 +269,17 @@ st.altair_chart(
 # Initial data for the tables
 if "assets_data" not in st.session_state:
     st.session_state.assets_data = pd.DataFrame(
-        {"Asset Name": ["Physical Assets", "Financial Assets"], "Value (₹)": [500000, 200000]}
+        {"Asset Name": ["Land", "Building", "Machinery","Furniture & Fittings","Cash & Cash equivalent", "Inventory", "Investements"], "Value (₹)": [500000, 100000, 100000,0,0,0,0]}
     )
 
 if "liabilities_data" not in st.session_state:
     st.session_state.liabilities_data = pd.DataFrame(
-        {"Liability Name": ["Current Liabilities", "Non-Current Liabilities"], "Value (₹)": [100000, 150000]}
+        {"Liability Name": ["Capital","Reserves","Loan", "Creditors"], "Value (₹)": [100000, 150000,0,0]}
     )
 
 if "equity_data" not in st.session_state:
     st.session_state.equity_data = pd.DataFrame(
-        {"Equity Name": ["Capital Invested", "Share Capital"], "Value (₹)": [300000,150000]}
+        {"Equity Name": ["Capitals", "Reserves"], "Value (₹)": [300000,150000]}
     )
 
 st.subheader("Manage Balance Sheet")
