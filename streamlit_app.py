@@ -160,6 +160,7 @@ The Wrenchman is located in District Center, Chandrashekharpur, Bhubaneswar.
 This shop is owned and operated by Lal Rajesh Shah Deo and he's in this
 business for the last 29 years. He has been providing services to all brands of 2 wheelers under
 his expertise and has built his reputation over time in this industry.
+
 """)
 
 # Check if image exists before loading
