@@ -7,8 +7,6 @@ import streamlit as st
 import altair as alt
 import pandas as pd
 
-
-
 # Set the title and favicon that appear in the Browser's tab bar.
 st.set_page_config(
     page_title="Wrenchman Service Provider",
@@ -170,12 +168,218 @@ if os.path.exists("image.jpeg"):
 else:
     st.warning("Image file 'image.jpeg' not found.")
 
+# Balance Sheet Tables for Assets, Liabilities, and Equity
+
+# Initial data for the tables
+def get_database_connection():
+    """
+    Create and return a new SQLite connection.
+    """
+    return sqlite3.connect("finance_data.db")
+
+def create_balance_sheet_tables():
+    """
+    Create tables in the database if they do not already exist.
+    """
+    conn = get_database_connection()
+    cursor = conn.cursor()
+    
+    # Create tables
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS Assets (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            value REAL
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS Liabilities (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            value REAL
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS Equity (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            value REAL
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+def update_balance_sheet_data():
+    """
+    Save Assets, Liabilities, and Equity data to the database.
+    """
+    conn = get_database_connection()
+    cursor = conn.cursor()
+
+    # Update Assets data
+    cursor.execute("DELETE FROM Assets")
+    for _, row in st.session_state.assets_data.iterrows():
+        cursor.execute("INSERT INTO Assets (name, value) VALUES (?, ?)", (row["Asset Name"], row["Value (₹)"]))
+
+    # Update Liabilities data
+    cursor.execute("DELETE FROM Liabilities")
+    for _, row in st.session_state.liabilities_data.iterrows():
+        cursor.execute("INSERT INTO Liabilities (name, value) VALUES (?, ?)", (row["Liability Name"], row["Value (₹)"]))
+
+    # Update Equity data
+    cursor.execute("DELETE FROM Equity")
+    for _, row in st.session_state.equity_data.iterrows():
+        cursor.execute("INSERT INTO Equity (name, value) VALUES (?, ?)", (row["Equity Name"], row["Value (₹)"]))
+
+    conn.commit()
+    conn.close()
+    st.success("Balance sheet data saved successfully!")
+
+# Initialize database
+create_balance_sheet_tables()
+
+# Initial data for the tables
+if "assets_data" not in st.session_state:
+    st.session_state.assets_data = pd.DataFrame(
+        {"Asset Name": ["Land", "Building", "Machinery", "Inventory of Service Parts", "Trade Receivables", "Cash and Cash Equivalents"], 
+         "Value (₹)": [200000,  288000,  1440000,  1300000,  311850,  548760]}
+    )
+
+if "liabilities_data" not in st.session_state:
+    st.session_state.liabilities_data = pd.DataFrame(
+        {"Liability Name": ["Creditors"], "Value (₹)": [ 935550]}
+    )
+
+if "equity_data" not in st.session_state:
+    st.session_state.equity_data = pd.DataFrame(
+        {"Equity Name": ["Capital", "Net Profit of CY", "Reserves"], "Value (₹)": [ 50000 ,  467000,  2636060]}
+    )
+
+if "profit_loss_data" not in st.session_state:
+    st.session_state.profit_loss_data = pd.DataFrame(
+        {
+            "Particulars": [
+                "Opening Stock of Spare Parts", "Purchase of Spare Parts", "Gross Profit",
+                "Revenue from Services", "Closing stock of Spare Parts", "License fees",
+                "Electricity", "Waste water treatment", "Salary and Wages", "Depreciation",
+                "Scrap disposal and Misc", "Net Profit"
+            ],
+            "Value (₹)": [
+                1150000, 3118500, 2229000, 5197500, 1300000, 275000, 280000, 187000, 828000,
+                72000, 120000, 467000
+            ]
+        }
+    )
+
+st.subheader("Manage Balance Sheet")
+
 st.info(
     """
-    Use the Cost Balance Sheet to add, remove, and edit items and associated costs.
-    And commit your changes once you have entered the data.
+    Use the  Balance Sheet to add, remove, and edit asset, equities & liabilities.
     """
 )
+
+# Editable Assets Table
+st.write("### Assets")
+st.session_state.assets_data = st.data_editor(
+    st.session_state.assets_data,
+    key="assets_table",
+    num_rows="dynamic",
+    use_container_width=True,
+    column_config={"Value (₹)": st.column_config.NumberColumn(format="₹%.2f")},
+)
+
+# Editable Liabilities Table
+st.write("### Liabilities")
+st.session_state.liabilities_data = st.data_editor(
+    st.session_state.liabilities_data,
+    key="liabilities_table",
+    num_rows="dynamic",
+    use_container_width=True,
+    column_config={"Value (₹)": st.column_config.NumberColumn(format="₹%.2f")},
+)
+
+# Editable Equity Table
+st.write("### Equity")
+st.session_state.equity_data = st.data_editor(
+    st.session_state.equity_data,
+    key="equity_table",
+    num_rows="dynamic",
+    use_container_width=True,
+    column_config={"Value (₹)": st.column_config.NumberColumn(format="₹%.2f")},
+)
+
+def format_currency(value):
+    """Format a number as Indian currency with commas."""
+    return f"₹{value:,.2f}"
+
+# -----------------------------------------------------------------------------
+# Final Table: Relation Between Assets, Liabilities, and Equity
+
+def validate_balance_sheet():
+    """
+    Function to validate the balance sheet and return the summary data.
+    """
+    total_assets = st.session_state.assets_data["Value (₹)"].sum()
+    total_liabilities = st.session_state.liabilities_data["Value (₹)"].sum()
+    total_equity = st.session_state.equity_data["Value (₹)"].sum()
+
+    # Calculate the difference for validation
+    difference = total_assets - (total_liabilities + total_equity)
+
+    summary_table = pd.DataFrame(
+        {
+            "Category": ["Total Assets", "Total Liabilities", "Total Equity", "Difference"],
+            "Value (₹)": [total_assets, total_liabilities, total_equity, difference],
+        }
+    )
+
+    return summary_table, difference
+
+st.subheader("Financial Summary")
+
+# Generate validation summary table
+summary_table, difference = validate_balance_sheet()
+st.table(summary_table)
+
+# Display validation results
+if difference != 0:
+    st.warning(f"There is a mismatch of ₹{difference:,.2f} between Assets and the sum of Liabilities and Equity.")
+else:
+    st.success("The Balance Sheet is balanced: Assets = Liabilities + Equity")
+
+# -----------------------------------------------------------------------------
+# Save Changes Buttons
+if st.button("Save Balance Sheet Changes"):
+    update_balance_sheet_data()
+
+
+st.write("### Profit and Loss Statement")
+profit_loss_display = st.session_state.profit_loss_data.copy()
+profit_loss_display["Value (₹)"] = profit_loss_display["Value (₹)"].apply(format_currency)
+st.table(profit_loss_display)
+
+excel_file_path = 'balanceSheet.xlsx' 
+
+# Function to allow users to download the Excel file
+def allow_download_excel(file_path):
+    # Read the Excel file
+    df = pd.read_excel(file_path)
+    
+    # Provide a download button for the file
+    with open(file_path, 'rb') as file:
+        st.download_button(
+            label="Download Balance Sheet Excel file", 
+            data=file, 
+            file_name="balanceSheet.xlsx",  # You can change the filename here
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+
+
+# Allow the user to download the Excel file
+allow_download_excel(excel_file_path)
+
+st.title("Inventory Details")
 
 # Connect to database and create table if needed
 conn, db_was_just_created = connect_db()
@@ -214,7 +418,7 @@ st.button(
 # -----------------------------------------------------------------------------
 # Now some charts for insights.
 
-st.subheader("Inventory Level and Reordering")
+st.subheader("Inventory to reorder")
 
 need_to_reorder = df[df["units_left"] < df["reorder_point"]].loc[:, "item_name"]
 
@@ -261,87 +465,7 @@ st.altair_chart(
     use_container_width=True,
 )
 
-
-
-# -----------------------------------------------------------------------------
-# Balance Sheet Tables for Assets, Liabilities, and Equity
-
-# Initial data for the tables
-if "assets_data" not in st.session_state:
-    st.session_state.assets_data = pd.DataFrame(
-        {"Asset Name": ["Land", "Building", "Machinery","Furniture & Fittings","Cash & Cash equivalent", "Inventory", "Investements"], "Value (₹)": [500000, 100000, 100000,0,0,0,0]}
-    )
-
-if "liabilities_data" not in st.session_state:
-    st.session_state.liabilities_data = pd.DataFrame(
-        {"Liability Name": ["Capital","Reserves","Loan", "Creditors"], "Value (₹)": [100000, 150000,0,0]}
-    )
-
-if "equity_data" not in st.session_state:
-    st.session_state.equity_data = pd.DataFrame(
-        {"Equity Name": ["Capitals", "Reserves"], "Value (₹)": [300000,150000]}
-    )
-
-st.subheader("Manage Balance Sheet")
-
-# Editable Assets Table
-st.write("### Assets")
-st.session_state.assets_data = st.data_editor(
-    st.session_state.assets_data,
-    key="assets_table",
-    num_rows="dynamic",  # Allow adding/removing rows
-    column_config={"Value (₹)": st.column_config.NumberColumn(format="₹%.2f")},
-)
-
-# Editable Liabilities Table
-st.write("### Liabilities")
-st.session_state.liabilities_data = st.data_editor(
-    st.session_state.liabilities_data,
-    key="liabilities_table",
-    num_rows="dynamic",  # Allow adding/removing rows
-    column_config={"Value (₹)": st.column_config.NumberColumn(format="₹%.2f")},
-)
-
-# Editable Equity Table
-st.write("### Equity")
-st.session_state.equity_data = st.data_editor(
-    st.session_state.equity_data,
-    key="equity_table",
-    num_rows="dynamic",  # Allow adding/removing rows
-    column_config={"Value (₹)": st.column_config.NumberColumn(format="₹%.2f")},
-)
-
-# -----------------------------------------------------------------------------
-# Final Table: Relation Between Assets, Liabilities, and Equity
-
-st.subheader("Financial Summary")
-total_assets = st.session_state.assets_data["Value (₹)"].sum()
-total_liabilities = st.session_state.liabilities_data["Value (₹)"].sum()
-total_equity = st.session_state.equity_data["Value (₹)"].sum()
-
-# Calculate the difference for validation
-difference = total_assets - (total_liabilities + total_equity)
-
-# Display the summary table
-summary_table = pd.DataFrame(
-    {
-        "Category": ["Total Assets", "Total Liabilities", "Total Equity", "Difference"],
-        "Value (₹)": [total_assets, total_liabilities, total_equity, difference],
-    }
-)
-st.table(summary_table)
-
-# Highlight if there is a mismatch
-if difference != 0:
-    st.warning(
-        f"There is a mismatch of ₹{difference:,.2f} between Assets and the sum of Liabilities and Equity."
-    )
-else:
-    st.success("The Balance Sheet is balanced: Assets = Liabilities + Equity")
-
-
 # Footer 
-    st.title("Shop Details")
 st.markdown(
     """
     ### Shop Details
