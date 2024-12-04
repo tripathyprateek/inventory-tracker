@@ -311,18 +311,48 @@ def shop_details():
         scrolling=False,
     )
 
+# Function to generate the Profit and Loss Statement
+def display_profit_and_loss():
+    # Create a sample Profit and Loss Statement data
+    profit_loss_data = pd.DataFrame({
+        "Particulars": [
+            "Opening Stock of Spare Parts", "Purchase of  Spare Parts", "Gross profit","Total",
+            "", "License fees", "Electricity", "Waste water treatment", "Salary and Wages", "Depreciation",
+            "Scrap disposal and Misc", "", "Net Profit", "Total"
+        ],
+        "Value (₹)": [
+            1150000, 3118500, 2229000, 6497500, " ",  275000,  280000,  187000,  828000,  72000,  120000, " ",  467000,  2229000
+        ]
+    })
+
+    revenues = pd.DataFrame({
+        "Particulars":[
+            "Revenue from Services", "Closing stock of Spare Parts", "Total","Gross Profit c/d", "Total"
+        ],
+        "Value (₹)":[
+             5197500, 1300000, 6497500,  2229000,  2229000
+        ]
+    })
+
+    # Display the data as a table
+    st.write("Below is the detailed Profit and Loss Statement:")
+    st.table(profit_loss_data)
+    st.table(revenues)
 
 # ---------------------------------------------------------------------
 # Main Application Logic
 
 # Tabs for the different sections
-tab1, tab2, tab3 = st.tabs(["Manage Balance Sheet", "Inventory Details", "Shop Details"])
+tab1, tab2, tab3, tab4 = st.tabs(["Manage Balance Sheet", "Profit & Loss","Inventory Details", "Shop Details"])
 
 with tab1:
     manage_balance_sheet()
 
 with tab2:
-    inventory_details()
+    display_profit_and_loss()
 
 with tab3:
+    inventory_details()
+
+with tab4:
     shop_details()
