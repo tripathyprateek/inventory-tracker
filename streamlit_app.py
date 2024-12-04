@@ -83,14 +83,14 @@ def initialize_data(conn):
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 [
-                    ("Engine Oil Change", 600.00, 100.00, 400.00, 35, 10, 10, "Engine oil replacement"),
-                    ("Brake Pad Replacement", 1000.00, 200.00, 600.00, 20, 8, 10, "Brake pad replacement service"),
-                    ("Spark Plug Replacement", 200.00, 50.00, 100.00, 30, 12, 5, "Replacement of spark plug"),
-                    ("Tire Replacement (Front)", 1200.00, 100.00, 900.00, 12, 5, 5, "Replacement of front tire"),
-                    ("Tire Replacement (Rear)", 1500.00, 100.00, 1100.00, 10, 5, 5, "Replacement of rear tire"),
-                    ("Battery Replacement", 2500.00, 150.00, 2000.00, 8, 3, 3, "Replacement of battery"),
-                    ("Chain Replacement", 800.00, 100.00, 500.00, 15, 7, 5, "Chain replacement service"),
-                    ("Headlight Replacement", 600.00, 50.00, 400.00, 10, 5, 5, "Headlight replacement"),
+                    ("Engine Oil Change", 600, 100, 400, 35, 10, 10, "Engine oil replacement"),
+                    ("Brake Pad Replacement", 1000, 200, 600, 20, 8, 10, "Brake pad replacement service"),
+                    ("Spark Plug Replacement", 200, 50, 100, 30, 12, 5, "Replacement of spark plug"),
+                    ("Tire Replacement (Front)", 1200, 100, 900, 12, 5, 5, "Replacement of front tire"),
+                    ("Tire Replacement (Rear)", 1500, 100, 1100, 10, 5, 5, "Replacement of rear tire"),
+                    ("Battery Replacement", 2500, 150, 2000, 8, 3, 3, "Replacement of battery"),
+                    ("Chain Replacement", 800, 100, 500, 15, 7, 5, "Chain replacement service"),
+                    ("Headlight Replacement", 600, 50, 400, 10, 5, 5, "Headlight replacement"),
                 ],
             )
             conn.commit()
@@ -189,7 +189,7 @@ def manage_balance_sheet():
 
     if "equity_data" not in st.session_state:
         st.session_state.equity_data = pd.DataFrame(
-            {"Equity Name": ["Capital", "Net Profit of CY", "Reserves"], "Value (₹)": [ 50000 ,  467000,  2636060]}
+            {"Equity Name": ["Capital", "Net Profit of CY", "Reserves"], "Value (₹)": [ 50000 , 467000, 2636060]}
         )
 
     st.write("### Assets")
@@ -229,7 +229,7 @@ def manage_balance_sheet():
     st.table(summary_table)
 
     if difference != 0:
-        st.warning(f"There is a mismatch of ₹{difference:,.2f} between Assets and the sum of Liabilities and Equity.")
+        st.warning(f"There is a mismatch of ₹{difference:,.0f} between Assets and the sum of Liabilities and Equity.")
     else:
         st.success("The Balance Sheet is balanced: Assets = Liabilities + Equity")
 
@@ -263,9 +263,9 @@ def inventory_details():
         disabled=["id"],  # Don't allow editing the 'id' column.
         num_rows="dynamic",  # Allow appending/deleting rows.
         column_config={
-            "price": st.column_config.NumberColumn(format="₹%.2f"),
-            "labor_cost": st.column_config.NumberColumn(format="₹%.2f"),
-            "parts_cost": st.column_config.NumberColumn(format="₹%.2f"),
+            "price": st.column_config.NumberColumn(format="₹%.0f"),
+            "labor_cost": st.column_config.NumberColumn(format="₹%.0f"),
+            "parts_cost": st.column_config.NumberColumn(format="₹%.0f"),
         },
         key="repair_table",
     )
